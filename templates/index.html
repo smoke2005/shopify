@@ -1,16 +1,216 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Shopify Orders Download</title>
-    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
-</head>
-<body>
-    <h1>Filter by Product Title</h1>
-    <form action="/download" method="get">
-        <input type="checkbox" name="product_title" value="Tamil Nadu"> Tamil Nadu<br>
-        <input type="checkbox" name="product_title" value="Karnataka"> Karnataka<br>
-        <input type="checkbox" name="product_title" value="Beacon"> Beacon<br><br>
-        <button type="submit">Download CSV</button>
-    </form>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shopify Order Analytics Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <div class="header-content">
+          <div class="logo">
+            <i class="fas fa-chart-line"></i>
+            <h1>Shopify Analytics</h1>
+          </div>
+          <p class="subtitle">
+            Download filtered order data by product categories
+          </p>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <div class="filter-card">
+          <div class="card-header">
+            <h2><i class="fas fa-filter"></i> Select Product Categories</h2>
+            <p>
+              Choose one or more product categories to filter your order data
+            </p>
+          </div>
+
+          <form
+            id="downloadForm"
+            action="/download"
+            method="get"
+            class="filter-form"
+          >
+            <div class="checkbox-grid">
+              <label class="checkbox-card" for="tamil_nadu">
+                <input
+                  type="checkbox"
+                  id="tamil_nadu"
+                  name="product_title"
+                  value="Tamil Nadu"
+                />
+                <div class="checkbox-content">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <span class="checkbox-title">Tamil Nadu</span>
+                  <span class="checkbox-description"
+                    >Tamil Nadu region products</span
+                  >
+                </div>
+                <div class="checkbox-indicator"></div>
+              </label>
+
+              <label class="checkbox-card" for="karnataka">
+                <input
+                  type="checkbox"
+                  id="karnataka"
+                  name="product_title"
+                  value="Karnataka"
+                />
+                <div class="checkbox-content">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <span class="checkbox-title">Karnataka</span>
+                  <span class="checkbox-description"
+                    >Karnataka region products</span
+                  >
+                </div>
+                <div class="checkbox-indicator"></div>
+              </label>
+
+              <label class="checkbox-card" for="beacon">
+                <input
+                  type="checkbox"
+                  id="beacon"
+                  name="product_title"
+                  value="Beacon"
+                />
+                <div class="checkbox-content">
+                  <i class="fas fa-signal"></i>
+                  <span class="checkbox-title">Beacon</span>
+                  <span class="checkbox-description"
+                    >Beacon series products</span
+                  >
+                </div>
+                <div class="checkbox-indicator"></div>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="selectAll()"
+              >
+                <i class="fas fa-check-double"></i>
+                Select All
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="clearAll()"
+              >
+                <i class="fas fa-times"></i>
+                Clear All
+              </button>
+
+              <button type="submit" class="btn btn-primary" id="downloadBtn">
+                <i class="fas fa-download"></i>
+                <span class="btn-text">Download CSV</span>
+                <div class="loading-spinner" style="display: none">
+                  <i class="fas fa-spinner fa-spin"></i>
+                </div>
+              </button>
+            </div>
+          </form>
+
+          <div class="info-section">
+            <div class="info-item">
+              <i class="fas fa-info-circle"></i>
+              <span
+                >CSV files include all order details, customer information, and
+                line items</span
+              >
+            </div>
+            <div class="info-item">
+              <i class="fas fa-clock"></i>
+              <span>Downloads may take a few seconds for large datasets</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      function selectAll() {
+        const checkboxes = document.querySelectorAll(
+          'input[name="product_title"]'
+        );
+        checkboxes.forEach((cb) => {
+          cb.checked = true;
+          // Trigger the change event to update styling
+          cb.dispatchEvent(new Event("change"));
+        });
+      }
+
+      function clearAll() {
+        const checkboxes = document.querySelectorAll(
+          'input[name="product_title"]'
+        );
+        checkboxes.forEach((cb) => {
+          cb.checked = false;
+          // Trigger the change event to update styling
+          cb.dispatchEvent(new Event("change"));
+        });
+      }
+
+      document
+        .getElementById("downloadForm")
+        .addEventListener("submit", function (e) {
+          const checkboxes = document.querySelectorAll(
+            'input[name="product_title"]:checked'
+          );
+
+          if (checkboxes.length === 0) {
+            e.preventDefault();
+            alert("Please select at least one product category");
+            return;
+          }
+
+          // Show loading state
+          const btn = document.getElementById("downloadBtn");
+          const btnText = btn.querySelector(".btn-text");
+          const spinner = btn.querySelector(".loading-spinner");
+
+          btn.disabled = true;
+          btnText.style.display = "none";
+          spinner.style.display = "inline-block";
+
+          // Reset button after 3 seconds (assuming download completes)
+          setTimeout(() => {
+            btn.disabled = false;
+            btnText.style.display = "inline-block";
+            spinner.style.display = "none";
+          }, 3000);
+        });
+
+      // Add smooth animations on checkbox changes
+      document
+        .querySelectorAll('input[type="checkbox"]')
+        .forEach((checkbox) => {
+          checkbox.addEventListener("change", function () {
+            const card = this.closest(".checkbox-card");
+            if (this.checked) {
+              card.classList.add("checked");
+            } else {
+              card.classList.remove("checked");
+            }
+          });
+        });
+    </script>
+  </body>
 </html>
