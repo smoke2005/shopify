@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shopify Orders Download</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+</head>
+<body>
+    <h1>Filter by Product Title</h1>
+    <form action="/download" method="get">
+        <input type="checkbox" name="product_title" value="Tamil Nadu"> Tamil Nadu<br>
+        <input type="checkbox" name="product_title" value="Karnataka"> Karnataka<br>
+        <input type="checkbox" name="product_title" value="Beacon"> Beacon<br><br>
+        <button type="submit">Download CSV</button>
+    </form>
+</body>
+</html>
