@@ -83,8 +83,10 @@ def export_orders():
             order_name = order.get("name", "")
             order_created_at = order.get("created_at", "")
             customer = order.get("customer", {}) or {}
-            state = customer.get("state", "")
-
+            if "Karnataka" in product_filters:
+                state = "Karnataka"
+            elif "Tamil Nadu" in product_filters:
+                state = "Tamil Nadu"
             for item in order.get("line_items", []):
             
                 properties_list = item.get("properties", [])
@@ -138,5 +140,4 @@ def export_orders():
             f"attachment; filename={product_filters[0]}_{datetime.now().strftime('%Y%m%d%H%M%S')}.csv"
         }
     )
-
 
