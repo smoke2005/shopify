@@ -57,7 +57,7 @@ def export_orders():
     product_filters = request.args.getlist('product_title')
     orders = fetch_shopify_orders(filter_product_titles=product_filters)
 
-    if product_filters in ["Karnataka","Tamil Nadu"]:
+    if any(p in ["Karnataka", "Tamil Nadu"] for p in product_filters):
         csv_columns = [
             "S. No",
             "Form ID/Application No.",
@@ -138,4 +138,5 @@ def export_orders():
             f"attachment; filename={product_filters[0]}_{datetime.now().strftime('%Y%m%d%H%M%S')}.csv"
         }
     )
+
 
