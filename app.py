@@ -57,30 +57,78 @@ def export_orders():
     product_filters = request.args.getlist('product_title')
     orders = fetch_shopify_orders(filter_product_titles=product_filters)
 
-    selected_fields = [
-    "id", "admin_graphql_api_id", "app_id", "browser_ip", "buyer_accepts_marketing",
-    "cart_token", "checkout_id", "checkout_token", "client_details", "confirmation_number",
-    "confirmed", "contact_email", "created_at", "currency", "current_subtotal_price",
-    "current_subtotal_price_set", "current_total_discounts", "current_total_discounts_set",
-    "current_total_price", "current_total_price_set", "current_total_tax", "current_total_tax_set",
-    "customer_locale", "discount_codes", "duties_included", "email", "estimated_taxes",
-    "financial_status", "landing_site", "name", "number", "order_number", "order_status_url",
-    "payment_gateway_names", "presentment_currency", "processed_at", "source_name", "subtotal_price",
-    "subtotal_price_set", "tax_exempt", "tax_lines", "taxes_included", "test", "token",
-    "total_discounts", "total_discounts_set", "total_line_items_price", "total_line_items_price_set",
-    "total_price", "total_price_set", "total_tax", "total_tax_set", "total_weight", "updated_at",
-    "billing_address", "customer", "line_items"
-    ]
+    if product_filters in ["Karnataka","Tamil Nadu"]:
+        csv_columns = [
+            "S. No",
+            "Form ID/Application No.",
+            "Student Name",
+            "Parent Email",
+            "Registered Class Name",
+            "Branch",
+            "Order Name",
+            "Order Created Date",
+            "State",
+            "Parent Name",
+            "Parent Phone No.",
+            "Stream",
+            "plan"
+        ]
 
-    selected_fields=sorted(selected_fields)
-    si = StringIO()
-    cw = csv.writer(si)
+        si = StringIO()
+        cw = csv.writer(si)
+        cw.writerow(csv_columns)
 
-    cw.writerow(selected_fields)
+        serial_no = 1
+        for order in orders:
+            order_name = order.get("name", "")
+            order_created_at = order.get("created_at", "")
+            customer = order.get("customer", {}) or {}
+            state = customer.get("state", "")
 
-    for order in orders:
-        row = [order.get(field, '') for field in selected_fields]
-        cw.writerow(row)
+            for item in order.get("line_items", []):
+            
+                properties_list = item.get("properties", [])
+                properties = {p['name']: p['value'] for p in properties_list}
+
+                row = [
+                    serial_no,
+                    properties.get("Form ID/Application No.", ""),
+                    properties.get("Student Name", ""),
+                    properties.get("Parent Email", customer.get("email", "")),
+                    properties.get("Registered Class Name", ""),
+                    properties.get("Branch", ""),
+                    order_name,
+                    order_created_at,
+                    state,
+                    properties.get("Parent Name", ""),
+                    properties.get("Parent Phone No.", ""),
+                    properties.get("Stream", ""),
+                    item.get("name","")
+                ]
+
+                cw.writerow(row)
+                serial_no += 1
+
+    elif "Beacon" in product_filters:
+        si = StringIO()
+        cw = csv.writer(si)
+        cw.writerow(["S No", "Order No", "Date of Purchase", "Email ID", "Billing Address", "No of Beacon/Sub Total"])
+
+        for i, order in enumerate(orders, start=1):
+            billing = order.get("billing_address", {})
+            billing_address = f"{billing.get('address1', '')}, {billing.get('city', '')}, {billing.get('province', '')}, {billing.get('zip', '')}, {billing.get('country', '')}"
+            
+            row = [
+                i,
+                order.get("order_number", ""),
+                order.get("created_at", ""),
+                order.get("email", ""),
+                billing_address,
+                order.get("subtotal_price", "")  
+            ]
+            
+            cw.writerow(row)
+
 
     return Response(
         si.getvalue(),
@@ -90,5 +138,4 @@ def export_orders():
             f"attachment; filename={product_filters[0]}_{datetime.now().strftime('%Y%m%d%H%M%S')}.csv"
         }
     )
-
 
