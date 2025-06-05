@@ -114,19 +114,31 @@ def export_orders():
     elif "Beacon" in product_filters:
         si = StringIO()
         cw = csv.writer(si)
-        cw.writerow(["S No", "Order No", "Date of Purchase", "Email ID", "Billing Address", "No of Beacon/Sub Total"])
+        cw.writerow(["S No", "Order No", "Date of Purchase", "Name","Email ID", "Billing Address", "Sub Total","Phone No."])
 
         for i, order in enumerate(orders, start=1):
+            shipping = order.get("shipping_address", {})
+            customer = order.get("customer", {}) or {}
             billing = order.get("billing_address", {})
+
             billing_address = f"{billing.get('address1', '')}, {billing.get('city', '')}, {billing.get('province', '')}, {billing.get('zip', '')}, {billing.get('country', '')}"
-            
+
+            parent_first_name = shipping.get("first_name", "")
+            parent_last_name = shipping.get("last_name", "")
+            parent_phone = f'="{shipping.get("phone", "")}"'
+            parent_name = f"{parent_first_name} {parent_last_name}".strip()
+            date_of_purchase = f'="{order.get('created_at', '')[:10]}"' # Keep it plain
+
+
             row = [
                 i,
                 order.get("order_number", ""),
-                order.get("created_at", ""),
+                date_of_purchase, 
+                parent_name,
                 order.get("email", ""),
                 billing_address,
-                order.get("subtotal_price", "")  
+                order.get("subtotal_price", ""),
+                parent_phone
             ]
             
             cw.writerow(row)
@@ -140,4 +152,3 @@ def export_orders():
             f"attachment; filename={product_filters[0]}_{datetime.now().strftime('%Y%m%d%H%M%S')}.csv"
         }
     )
-
